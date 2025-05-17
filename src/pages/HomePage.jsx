@@ -11,54 +11,65 @@ export default function HomePage() {
 
   useEffect(() => {
     getUsers();
-
-    async function getUsers() {
-      const data = localStorage.getItem("users"); // get data from local storage
-
-      let usersData = [];
-
-      if (data) {
-        // if data exists in local storage
-        usersData = JSON.parse(data); // parse the data from string to javascript array
-      } else {
-        // if data does not exist in local storage fetch the data from the API
-        usersData = await fetchUsers(); // fetch the data from the API
-      }
-
-      console.log(usersData);
-      setUsers(usersData); // set the users state with the data from local storage
-    }
   }, []);
 
+  async function getUsers() {
+    const response = await fetch(
+      "https://testingproject-13cc2-default-rtdb.europe-west1.firebasedatabase.app/users.json"
+    );
+    const data = await response.json();
+    console.log(data);
+
+    const userData = Object.keys(data).map((key) => {
+      return {
+        id: key,
+        ...data[key],
+      };
+    });
+    console.log(userData);
+    setUsers(userData);
+  }
+
   async function fetchUsers() {
-    const response = await fetch("https://raw.githubusercontent.com/cederdorff/race/master/data/users.json"); // fetch the data from the API
+    const response = await fetch(
+      "https://raw.githubusercontent.com/cederdorff/race/master/data/users.json"
+    ); // fetch the data from the API
     const data = await response.json(); // parse the data from string to javascript array
     localStorage.setItem("users", JSON.stringify(data)); // save the data to local storage
     return data; // return the data
   }
 
   // Search, filter and sort the users array
-  let filteredUsers = users.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  let filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const titles = [...new Set(users.map(user => user.title))]; // get all the unique titles from the users array
+  const titles = [...new Set(users.map((user) => user.title))]; // get all the unique titles from the users array
 
   if (filter != "") {
-    filteredUsers = filteredUsers.filter(user => user.title === filter); // filter the users array by the selected title
+    filteredUsers = filteredUsers.filter((user) => user.title === filter); // filter the users array by the selected title
   }
 
-  filteredUsers.sort((user1, user2) => user1[sortBy].localeCompare(user2[sortBy])); // sort the users array by the selected sort
+  filteredUsers.sort((user1, user2) =>
+    user1[sortBy].localeCompare(user2[sortBy])
+  ); // sort the users array by the selected sort
 
   return (
     <section className="page">
       <form className="grid-filter" role="search">
         <label>
-          Serach by Name <input placeholder="Search" type="search" onChange={e => setSearchTerm(e.target.value)} />
+          Serach by Name{" "}
+          <input
+            placeholder="Search"
+            type="search"
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </label>
         <label>
           Filter by Title
-          <select onChange={e => setFilter(e.target.value)}>
+          <select onChange={(e) => setFilter(e.target.value)}>
             <option value="">select title</option>
-            {titles.map(title => (
+            {titles.map((title) => (
               <option key={title} value={title}>
                 {title}
               </option>
@@ -67,7 +78,7 @@ export default function HomePage() {
         </label>
         <label>
           Sort by
-          <select name="sort-by" onChange={e => setSortBy(e.target.value)}>
+          <select name="sort-by" onChange={(e) => setSortBy(e.target.value)}>
             <option value="name">Name</option>
             <option value="title">Title</option>
             <option value="mail">Mail</option>
@@ -75,7 +86,7 @@ export default function HomePage() {
         </label>
       </form>
       <section className="grid">
-        {filteredUsers.map(user => (
+        {filteredUsers.map((user) => (
           <User user={user} key={user.id} />
         ))}
       </section>
